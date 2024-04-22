@@ -113,11 +113,9 @@ async fn main() {
                     .set_full_scale_range(FullScaleRange::Within4_096V)
                     .unwrap(),
             }
-            let mut count: u16 = 0;
             let mut values: i16;
             let measurement = std::env::var("MEASUREMENT").unwrap_or("ads1115".to_string());
             let field = std::env::var("FIELDS").unwrap_or("value".to_string());
-            println!("{:?}", spst);
             let dur = time::Duration::from_micros(500);
             let exporter = std::env::var("EXPORTER").unwrap_or("default".to_string());
             if exporter != "CSV" {
@@ -128,7 +126,6 @@ async fn main() {
                 let mut write_query;
                 while Local::now().timestamp_subsec_millis() != 0 {}
                 loop {
-                    count += 1;
                     while !spst.contains(&Local::now().timestamp_subsec_millis()) {}
                     values = adc.read().unwrap();
                     println!("{:+06}", values);
@@ -136,10 +133,7 @@ async fn main() {
                         .into_query(&field)
                         .add_field(&measurement, values);
                     client.query(&write_query).await.unwrap();
-                    if count >= 860 {
-                        break;
-                    }
-                    println!("{:?}", Local::now().timestamp_subsec_millis());
+                    println!("{:+06}", values);
                     thread::sleep(dur);
                 }
             } else {
@@ -160,7 +154,6 @@ async fn main() {
                 .unwrap();
                 while Local::now().timestamp_subsec_millis() != 0 {}
                 loop {
-                    count += 1;
                     while !spst.contains(&Local::now().timestamp_subsec_millis()) {}
                     values = adc.read().unwrap();
                     writeln!(
@@ -172,10 +165,7 @@ async fn main() {
                         measurement
                     )
                     .unwrap();
-                    if count >= 860 {
-                        break;
-                    }
-                    println!("{:?}", Local::now().timestamp_subsec_millis());
+                    println!("{:+06}", values);
                     thread::sleep(dur);
                 }
             }

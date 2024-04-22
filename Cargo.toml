@@ -10,7 +10,5 @@ edition = "2021"
 ads1x1x = "0.2.2"
 async-std = { version = "1.12.0", features = ["attributes", "tokio1"] }
 chrono = "0.4.38"
-embedded-hal = "0.2.7"
-futures = "0.3.30"
 influxdb = { version = "0.7.2", features = ["derive"] }
 linux-embedded-hal = "0.3.2"
