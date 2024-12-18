@@ -9,6 +9,6 @@ edition = "2021"
 [dependencies]
 ads1x1x = "0.2.2"
 async-std = { version = "1.13.0", features = ["attributes", "tokio1"] }
-chrono = "0.4.38"
+chrono = "0.4.39"
 influxdb = { version = "0.7.2", features = ["derive"] }
 linux-embedded-hal = "0.3.2"
