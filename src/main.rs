@@ -1,4 +1,4 @@
-use ads1x1x::{channel, Ads1x1x, DataRate16Bit, FullScaleRange, ModeChangeError, SlaveAddr};
+use ads1x1x::{Ads1x1x, DataRate16Bit, FullScaleRange, ModeChangeError, TargetAddr, channel};
 use chrono::{Local, Utc};
 use influxdb::InfluxDbWriteable;
 use influxdb::{Client, Timestamp};
@@ -12,14 +12,13 @@ async fn main() {
     let i2cpath = std::env::var("I2C").unwrap_or("/dev/i2c-1".to_string());
     let dev = I2cdev::new(&i2cpath).unwrap();
     let addrpin = std::env::var("ADDR").unwrap_or("default".to_string());
-    let address: SlaveAddr;
-    match &*addrpin {
-        "GND" | "gnd" | "0x48" | "48" => address = SlaveAddr::new_gnd(),
-        "VDD" | "vdd" | "0x49" | "49" => address = SlaveAddr::new_vdd(),
-        "SDA" | "sda" | "0x4A" | "4A" => address = SlaveAddr::new_sda(),
-        "SCL" | "scl" | "0x4B" | "4B" => address = SlaveAddr::new_scl(),
-        _ => address = SlaveAddr::default(),
-    }
+    let address = match &*addrpin {
+        "GND" | "gnd" | "0x48" | "48" => TargetAddr::Gnd,
+        "VDD" | "vdd" | "0x49" | "49" => TargetAddr::Vdd,
+        "SDA" | "sda" | "0x4A" | "4A" => TargetAddr::Sda,
+        "SCL" | "scl" | "0x4B" | "4B" => TargetAddr::Scl,
+        _ => TargetAddr::default(),
+    };
     let adc = Ads1x1x::new_ads1115(dev, address);
     match adc.into_continuous() {
         Err(ModeChangeError::I2C(e, adc)) => {
@@ -29,15 +28,15 @@ async fn main() {
         Ok(mut adc) => {
             let chan = std::env::var("CHANNEL").unwrap_or("default".to_string());
             match &*chan {
-                "A0" => adc.select_channel(&mut channel::SingleA0).unwrap(),
-                "A1" => adc.select_channel(&mut channel::SingleA1).unwrap(),
-                "A2" => adc.select_channel(&mut channel::SingleA2).unwrap(),
-                "A3" => adc.select_channel(&mut channel::SingleA3).unwrap(),
-                "A0A1" => adc.select_channel(&mut channel::DifferentialA0A1).unwrap(),
-                "A0A3" => adc.select_channel(&mut channel::DifferentialA0A3).unwrap(),
-                "A1A3" => adc.select_channel(&mut channel::DifferentialA1A3).unwrap(),
-                "A2A4" => adc.select_channel(&mut channel::DifferentialA2A3).unwrap(),
-                _ => adc.select_channel(&mut channel::SingleA0).unwrap(),
+                "A0" => adc.select_channel(channel::SingleA0).unwrap(),
+                "A1" => adc.select_channel(channel::SingleA1).unwrap(),
+                "A2" => adc.select_channel(channel::SingleA2).unwrap(),
+                "A3" => adc.select_channel(channel::SingleA3).unwrap(),
+                "A0A1" => adc.select_channel(channel::DifferentialA0A1).unwrap(),
+                "A0A3" => adc.select_channel(channel::DifferentialA0A3).unwrap(),
+                "A1A3" => adc.select_channel(channel::DifferentialA1A3).unwrap(),
+                "A2A4" => adc.select_channel(channel::DifferentialA2A3).unwrap(),
+                _ => adc.select_channel(channel::SingleA0).unwrap(),
             }
             let sps = std::env::var("SPS").unwrap_or("default".to_string());
             let spsd;
@@ -169,6 +168,8 @@ async fn main() {
                     thread::sleep(dur);
                 }
             }
+
+            #[allow(unreachable_code)]
             let _dev = adc.destroy_ads1115();
         }
     }
