@@ -129,7 +129,8 @@ async fn main() {
                     values = adc.read().unwrap();
                     println!("{:+06}", values);
                     write_query = Timestamp::Milliseconds(Utc::now().timestamp_millis() as u128)
-                        .into_query(&field)
+                        .try_into_query(&field)
+                        .unwrap()
                         .add_field(&measurement, values);
                     client.query(&write_query).await.unwrap();
                     println!("{:+06}", values);
