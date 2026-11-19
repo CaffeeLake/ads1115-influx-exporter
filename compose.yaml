@@ -1,6 +1,6 @@
 services:
   influxdb:
-    image: influxdb:2.9
+    image: influxdb:2.10
     restart: unless-stopped
     ports:
       - 8086:8086
